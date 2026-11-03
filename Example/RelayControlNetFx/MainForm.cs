@@ -8,7 +8,7 @@ namespace RelayControlNetFx
 {
     public partial class MainForm : Form
     {
-        private readonly RelayTcpTransport _transport = new RelayTcpTransport();
+        private readonly RelayTcpTransport _transport;
         private Button[] _openButtons;
         private Button[] _closeButtons;
         private Label[] _relayLabels;
@@ -23,6 +23,11 @@ namespace RelayControlNetFx
         public MainForm()
         {
             InitializeComponent();
+            _transport = new RelayTcpTransport();
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
             BindRelayButtons();
             BindEvents();
             cmbMode.SelectedIndex = 0;
@@ -33,6 +38,13 @@ namespace RelayControlNetFx
             UpdateConnectionUi(TransportState.Disconnected, "Disconnected");
             AppendLog("Ready. OPEN = ON/energize; CLOSE = OFF/de-energize.");
             AppendLog("Status shows commands SENT, not measured physical relay state.");
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            _closing = true;
+            _transport.Dispose();
+            base.OnFormClosing(e);
         }
 
         private void BindEvents()
@@ -310,11 +322,6 @@ namespace RelayControlNetFx
             txtLog.ScrollToCaret();
         }
 
-        protected override void OnFormClosing(FormClosingEventArgs e)
-        {
-            _closing = true;
-            _transport.Dispose();
-            base.OnFormClosing(e);
-        }
+
     }
 }
